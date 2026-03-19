@@ -24,6 +24,8 @@ export default function ConnectionManager({ onConnect }) {
   const [testingUri, setTestingUri] = useState(false);
   const [connectingId, setConnectingId] = useState(null);
   const [formError, setFormError] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
   const loadConnections = useCallback(async () => {
     try {
@@ -81,12 +83,17 @@ export default function ConnectionManager({ onConnect }) {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeletingId(deleteTarget.id);
     try {
-      await del(`/connections/${id}`);
+      await del(`/connections/${deleteTarget.id}`);
       await loadConnections();
+      setDeleteTarget(null);
     } catch {
       // silent
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -254,7 +261,7 @@ export default function ConnectionManager({ onConnect }) {
                     )}
                   </button>
                   <button
-                    onClick={() => handleDelete(conn.id)}
+                    onClick={() => setDeleteTarget(conn)}
                     className="p-2 rounded-lg text-error hover:bg-error/10 transition-colors"
                     title="Delete"
                   >
@@ -266,6 +273,40 @@ export default function ConnectionManager({ onConnect }) {
           </div>
         )}
       </div>
+
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <button
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setDeleteTarget(null)}
+            aria-label="Close delete confirmation"
+          />
+          <div className="relative w-full max-w-md bg-bg-card border border-border-primary rounded-xl shadow-2xl animate-fade-in p-6">
+            <h3 className="text-base font-semibold text-text-primary mb-2">Delete connection?</h3>
+            <p className="text-sm text-text-secondary mb-5">
+              You are about to delete <span className="font-semibold text-text-primary">"{deleteTarget.name}"</span>.
+              This action cannot be undone.
+            </p>
+            <div className="flex items-center justify-end gap-2">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                disabled={deletingId === deleteTarget.id}
+                className="px-4 py-2 rounded-lg border border-border-primary text-sm text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deletingId === deleteTarget.id}
+                className="px-4 py-2 rounded-lg bg-error/90 hover:bg-error text-white text-sm font-medium transition-colors disabled:opacity-50 inline-flex items-center gap-2"
+              >
+                {deletingId === deleteTarget.id && <Loader2 size={14} className="animate-spin" />}
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

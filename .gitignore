@@ -21,7 +21,7 @@ build/
 # Runtime data
 *.sqlite
 *.sqlite3
-*.db
+mongo-vista.db*
 
 # OS/editor files
 .DS_Store
