@@ -282,7 +282,7 @@ export default function DocumentViewer({ connectionId, dbName, collectionName })
                     {row.getVisibleCells().map((cell) => (
                       <td
                         key={cell.id}
-                        className="px-3 py-2 max-w-xs truncate align-top"
+                        className="px-3 py-2 max-w-xs align-top overflow-visible"
                         style={{ width: cell.column.getSize() }}
                       >
                         {flexRender(
